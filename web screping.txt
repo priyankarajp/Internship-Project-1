@@ -1,0 +1,148 @@
+Extracting Stock Data Using a Web Scraping
+Not all stock data is available via API in this assignment; you will use web-scraping to obtain financial data. You will be quizzed on your results.
+Using beautiful soup we will extract historical share data from a web-page.
+
+Table of Contents
+Downloading the Webpage Using Requests Library
+Parsing Webpage HTML Using BeautifulSoup
+Extracting Data and Building DataFrame
+Estimated Time Needed: 30 min
+
+#!pip install pandas
+#!pip install requests
+!pip install bs4
+#!pip install plotly
+Requirement already satisfied: bs4 in /home/jupyterlab/conda/envs/python/lib/python3.6/site-packages (0.0.1)
+Requirement already satisfied: beautifulsoup4 in /home/jupyterlab/conda/envs/python/lib/python3.6/site-packages (from bs4) (4.9.3)
+Requirement already satisfied: soupsieve>1.2; python_version >= "3.0" in /home/jupyterlab/conda/envs/python/lib/python3.6/site-packages (from beautifulsoup4->bs4) (2.2.1)
+ 
+import pandas as pd
+import requests
+from bs4 import BeautifulSoup
+ 
+Using Webscraping to Extract Stock Data Example
+First we must use the request library to downlaod the webpage, and extract the text. We will extract Netflix stock data https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-PY0220EN-SkillsNetwork/labs/project/netflix_data_webpage.html.
+
+url = "https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-PY0220EN-SkillsNetwork/labs/project/netflix_data_webpage.html"
+
+data  = requests.get(url).text
+ 
+Next we must parse the text into html using beautiful_soup
+
+soup = BeautifulSoup(data, 'html5lib')
+ 
+Now we can turn the html table into a pandas dataframe
+
+netflix_data = pd.DataFrame(columns=["Date", "Open", "High", "Low", "Close", "Volume"])
+
+# First we isolate the body of the table which contains all the information
+# Then we loop through each row and find all the column values for each row
+for row in soup.find("tbody").find_all('tr'):
+    col = row.find_all("td")
+    date = col[0].text
+    Open = col[1].text
+    high = col[2].text
+    low = col[3].text
+    close = col[4].text
+    adj_close = col[5].text
+    volume = col[6].text
+    
+    # Finally we append the data of each row to the table
+    netflix_data = netflix_data.append({"Date":date, "Open":Open, "High":high, "Low":low, "Close":close, "Adj Close":adj_close, "Volume":volume}, ignore_index=True)    
+ 
+We can now print out the dataframe
+
+netflix_data.head()
+Date	Open	High	Low	Close	Volume	Adj Close
+0	Jun 01, 2021	504.01	536.13	482.14	528.21	78,560,600	528.21
+1	May 01, 2021	512.65	518.95	478.54	502.81	66,927,600	502.81
+2	Apr 01, 2021	529.93	563.56	499.00	513.47	111,573,300	513.47
+3	Mar 01, 2021	545.57	556.99	492.85	521.66	90,183,900	521.66
+4	Feb 01, 2021	536.79	566.65	518.28	538.85	61,902,300	538.85
+ 
+We can also use the pandas read_html function using the url
+
+read_html_pandas_data = pd.read_html(url)
+ 
+Or we can convert the BeautifulSoup object to a string
+
+read_html_pandas_data = pd.read_html(str(soup))
+ 
+Beacause there is only one table on the page, we just take the first table in the list returned
+
+netflix_dataframe = read_html_pandas_data[0]
+
+netflix_dataframe.head()
+Date	Open	High	Low	Close*	Adj Close**	Volume
+0	Jun 01, 2021	504.01	536.13	482.14	528.21	528.21	78560600
+1	May 01, 2021	512.65	518.95	478.54	502.81	502.81	66927600
+2	Apr 01, 2021	529.93	563.56	499.00	513.47	513.47	111573300
+3	Mar 01, 2021	545.57	556.99	492.85	521.66	521.66	90183900
+4	Feb 01, 2021	536.79	566.65	518.28	538.85	538.85	61902300
+ 
+Using Webscraping to Extract Stock Data Exercise
+Use the requests library to download the webpage https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-PY0220EN-SkillsNetwork/labs/project/amazon_data_webpage.html. Save the text of the response as a variable named html_data.
+
+new_url = "https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-PY0220EN-SkillsNetwork/labs/project/amazon_data_webpage.html"
+
+html_data = requests.get(new_url).text
+ 
+ 
+Parse the html data using beautiful_soup.
+
+beautiful_soup=BeautifulSoup(html_data,'html5lib')
+ 
+ 
+Question 1 What is the content of the title attribute:
+
+soup_title=beautiful_soup.title
+print("The title is:",soup_title)
+The title is: <title>Amazon.com, Inc. (AMZN) Stock Historical Prices &amp; Data - Yahoo Finance</title>
+ 
+Using beautiful soup extract the table with historical share prices and store it into a dataframe named amazon_data. The dataframe should have columns Date, Open, High, Low, Close, Adj Close, and Volume. Fill in each variable with the correct data from the list col.
+
+amazon_data = pd.DataFrame(columns=["Date", "Open", "High", "Low", "Close", "Volume"])
+
+for row in soup.find("tbody").find_all("tr"):
+    col = row.find_all("td")
+    date = col[0].text
+    Open = col[1].text
+    high = col[2].text
+    low = col[3].text
+    close = col[4].text
+    adj_close = col[5].text
+    volume = col[6].text
+    
+    amazon_data = amazon_data.append({"Date":date, "Open":Open, "High":high, "Low":low, "Close":close, "Adj Close":adj_close, "Volume":volume}, ignore_index=True)
+ 
+ 
+Print out the first five rows of the amazon_data dataframe you created.
+
+amazon_data.head()
+Date	Open	High	Low	Close	Volume	Adj Close
+0	Jun 01, 2021	504.01	536.13	482.14	528.21	78,560,600	528.21
+1	May 01, 2021	512.65	518.95	478.54	502.81	66,927,600	502.81
+2	Apr 01, 2021	529.93	563.56	499.00	513.47	111,573,300	513.47
+3	Mar 01, 2021	545.57	556.99	492.85	521.66	90,183,900	521.66
+4	Feb 01, 2021	536.79	566.65	518.28	538.85	61,902,300	538.85
+ 
+ 
+Question 2 What is the name of the columns of the dataframe
+
+print(amazon_data.columns)
+Index(['Date', 'Open', 'High', 'Low', 'Close', 'Volume', 'Adj Close'], dtype='object')
+ 
+ 
+Question 3 What is the Open of the last row of the amazon_data dataframe?
+
+amazon_data.tail()
+Date	Open	High	Low	Close	Volume	Adj Close
+65	Jan 01, 2016	109.00	122.18	90.11	91.84	488,193,200	91.84
+66	Dec 01, 2015	124.47	133.27	113.85	114.38	319,939,200	114.38
+67	Nov 01, 2015	109.20	126.60	101.86	123.33	320,321,800	123.33
+68	Oct 01, 2015	102.91	115.83	96.26	108.38	446,204,400	108.38
+69	Sep 01, 2015	109.35	111.24	93.55	103.26	497,401,200	103.26
+ 
+amazon_data.iloc[-1, 1]
+'109.35'
+ 
